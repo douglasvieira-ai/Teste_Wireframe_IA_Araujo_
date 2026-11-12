@@ -1,0 +1,103 @@
+<div class="chat-layout">
+  <!-- Chat Header -->
+  <header class="chat-header">
+    <div class="agent-info">
+      @if (showExpandButton) {
+        <button class="expand-panel-btn" title="Mostrar painel" (click)="expandPanel.emit()">
+          <app-icon name="panel-left" [size]="20" />
+        </button>
+      }
+      <div class="agent-avatar" [style.background-color]="currentAgent?.color + '30'" [style.color]="currentAgent?.color">
+        <app-icon [name]="agentIcon" [size]="24" />
+      </div>
+      <div class="agent-details">
+        <h1 class="agent-name">{{ currentAgent?.name || 'Agente IA' }}</h1>
+        <div class="agent-status">
+          <span class="status-dot online"></span>
+          <span class="status-text">Online</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <div class="header-divider"></div>
+  
+  <!-- Messages Area -->
+  <div class="messages-area" #messagesContainer>
+    <!-- Date Separator -->
+    <div class="date-separator">
+      <span class="date-text">Hoje</span>
+    </div>
+    
+    <!-- Messages -->
+    @for (message of messages; track message.id) {
+      @if (message.isSystem) {
+        <div class="system-notice" @messageIn>
+          <app-icon name="sparkles" [size]="14" />
+          <span>{{ stripMarkdown(message.content) }}</span>
+        </div>
+      } @else {
+        <div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'" @messageIn>
+          @if (message.role === 'assistant') {
+            <div class="message-avatar" [style.background-color]="currentAgent?.color + '30'" [style.color]="currentAgent?.color">
+              <app-icon [name]="agentIcon" [size]="20" />
+            </div>
+          }
+          <div class="message-content">
+            <div class="message-bubble" [style.background-color]="message.role === 'assistant' ? 'var(--color-bg-card)' : currentAgent?.color">
+              <p class="message-text" [innerHTML]="message.content"></p>
+            </div>
+            <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+          </div>
+        </div>
+      }
+    }
+    
+    <!-- Typing Indicator -->
+    @if (isTyping) {
+      <div class="message assistant" @messageIn>
+        <div class="message-avatar" [style.background-color]="currentAgent?.color + '30'" [style.color]="currentAgent?.color">
+          <app-icon [name]="agentIcon" [size]="20" />
+        </div>
+        <div class="message-content">
+          <div class="typing-bubble">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  
+  <!-- Suggestions -->
+  @if (messages.length <= 1) {
+    <div class="suggestions-area">
+      @for (question of suggestedQuestions; track question) {
+        <button class="suggestion-chip" (click)="useSuggestion(question)">
+          {{ question }}
+        </button>
+      }
+    </div>
+  }
+  
+  <!-- Input Area -->
+  <div class="input-area">
+    <div class="input-container">
+      <input 
+        type="text" 
+        class="message-input"
+        [placeholder]="'Pergunte algo ao ' + (currentAgent?.name || 'Agente') + '...'"
+        [(ngModel)]="inputMessage"
+        (keydown)="handleKeyDown($event)"
+      >
+      <button 
+        class="send-button"
+        [disabled]="!inputMessage.trim()"
+        (click)="sendMessage()"
+      >
+        <app-icon name="arrow-up" [size]="20" class="send-icon" />
+      </button>
+    </div>
+  </div>
+</div>

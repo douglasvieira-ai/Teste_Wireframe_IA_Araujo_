@@ -1,0 +1,693 @@
+:host {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+.criar-agente-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  gap: var(--panel-gap);
+  padding: var(--panel-gap);
+  background-color: var(--color-app-bg);
+}
+
+// Left Panel - Selection (card flutuante)
+.selection-panel {
+  flex: 0 0 clamp(420px, 45%, 620px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-card);
+  border-radius: var(--panel-radius);
+  overflow: hidden;
+  
+  .panel-header {
+    flex-shrink: 0;
+    padding: 24px 30px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .panel-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+  }
+  
+  .panel-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--color-text-primary);
+  }
+  
+  .panel-subtitle {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+  
+  .groups-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+// Agent Group
+.agent-group {
+  flex-shrink: 0;
+  background-color: var(--color-bg-hover);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    
+    &:hover {
+      background-color: var(--color-border);
+    }
+  }
+  
+  .group-icon {
+    flex-shrink: 0;
+  }
+  
+  .group-name {
+    flex: 1;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-text-primary);
+  }
+  
+  .group-count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  
+  .group-chevron {
+    color: var(--color-text-muted);
+    transition: transform var(--transition-fast);
+  }
+  
+  &.expanded .group-chevron {
+    transform: rotate(0deg);
+  }
+  
+  &:not(.expanded) .group-chevron {
+    transform: rotate(-90deg);
+  }
+  
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px 16px 16px;
+  }
+}
+
+// Checkbox
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-text-muted);
+  border-radius: 4px;
+  position: relative;
+  transition: all var(--transition-fast);
+  
+  &::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: var(--color-bg-dark);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+  
+  &.checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    
+    &::after {
+      opacity: 1;
+    }
+  }
+}
+
+.checkbox-wrapper {
+  &.checked .checkbox,
+  &.indeterminate .checkbox {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  
+  &.indeterminate .checkbox::after {
+    content: '−';
+    opacity: 1;
+  }
+}
+
+// Agent Item
+.agent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  
+  &:hover {
+    background-color: var(--color-bg-card);
+  }
+  
+  &.selected {
+    background-color: var(--color-primary-light);
+  }
+  
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
+    font-size: 10px;
+  }
+  
+  .agent-name {
+    font-size: 13px;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Right Panel - Preview / Chat (card flutuante)
+.preview-panel {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-card);
+  border-radius: var(--panel-radius);
+  padding: 40px;
+  overflow-y: auto;
+  min-width: 0;
+
+  // Modo chat: preenche o painel, sem centralizar nem padding
+  &.chat-mode {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  // Botão flutuante para reabrir a seleção
+  .selection-reopen {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+  }
+
+  // Barra de ações acima do chat
+  .chat-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+
+    .btn-readjust,
+    .btn-save-preset-sm {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-readjust {
+      background-color: var(--color-bg-hover);
+      border: none;
+      color: var(--color-text-primary);
+
+      &:hover {
+        background-color: var(--color-border);
+      }
+    }
+
+    .btn-save-preset-sm {
+      background-color: transparent;
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+
+      &:hover {
+        background-color: var(--color-primary-light);
+      }
+    }
+  }
+
+  // O chat embutido preenche o espaço restante
+  app-chat {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+  
+  .preview-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    width: 100%;
+    margin: auto;
+  }
+  
+  .preview-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--color-text-primary);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .selected-info {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    
+    .selected-count {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 48px;
+      color: var(--color-primary);
+    }
+    
+    .selected-label {
+      font-size: 16px;
+      color: var(--color-text-secondary);
+    }
+  }
+  
+  .selected-agents {
+    margin-bottom: 32px;
+    
+    .selected-agents-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .agents-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+  
+  .agent-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: var(--color-bg-card);
+    border: 1px solid;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    
+    .pill-remove {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      
+      &:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    
+    .empty-icon {
+      color: var(--color-text-muted);
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+    
+    .empty-text {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 300px;
+    }
+  }
+  
+  .btn-create {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px 32px;
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-bg-dark);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-top: 24px;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-icon {
+      flex-shrink: 0;
+    }
+  }
+
+  .preview-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .btn-save-preset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 32px;
+    background-color: transparent;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-lg);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .btn-icon { flex-shrink: 0; }
+  }
+}
+
+// ============================================
+// FORMULÁRIO DE SALVAR PREDEFINIÇÃO
+// ============================================
+.preset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 30px;
+  overflow-y: auto;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background-color: var(--color-bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color var(--transition-fast);
+    resize: none;
+
+    &::placeholder { color: var(--color-text-muted); }
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+  }
+}
+
+.form-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background-color: var(--color-bg-dark);
+  border-radius: var(--radius-md);
+
+  .form-summary-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .agents-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .agent-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: var(--color-bg-card);
+    border: 1px solid;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    color: var(--color-text-primary);
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+
+  .btn-secondary {
+    flex: 0 0 auto;
+    padding: 14px 24px;
+    background-color: var(--color-bg-hover);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover { background-color: var(--color-border); }
+  }
+
+  .btn-create { flex: 1; margin-top: 0; }
+}
+
+// Confirmação de salvamento
+.save-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  height: 100%;
+  padding: 40px;
+
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+
+  .success-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--color-text-primary);
+  }
+
+  .success-text {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    max-width: 340px;
+  }
+
+  .btn-create {
+    margin-top: 8px;
+    width: auto;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+// ============================================
+// RESPONSIVIDADE
+// ============================================
+
+@media (max-width: 1100px) {
+  .selection-panel {
+    flex: 0 0 clamp(360px, 48%, 480px);
+    
+    .panel-header {
+      padding: 20px;
+    }
+    
+    .groups-list {
+      padding: 12px;
+    }
+  }
+  
+  .agent-group .agents-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .preview-panel {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 820px) {
+  .criar-agente-layout {
+    flex-direction: column;
+  }
+  
+  .selection-panel {
+    flex: 1 1 60%;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .preview-panel {
+    flex: 1 1 40%;
+    width: 100%;
+  }
+  
+  .agent-group .agents-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

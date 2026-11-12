@@ -1,0 +1,293 @@
+<div class="especialista-layout">
+  <!-- Left Panel: Wizard do Orquestrador -->
+  @if (wizardVisible) {
+    <section class="wizard-panel" @slidePanel>
+      <header class="panel-header">
+        <div class="panel-header-top">
+          <div class="orchestrator-badge">
+            <app-icon name="cpu" [size]="18" />
+            Agente Orquestrador
+          </div>
+          <button class="panel-toggle" title="Esconder" (click)="toggleWizard()">
+            <app-icon name="panel-left-close" [size]="18" />
+          </button>
+        </div>
+        <p class="orchestrator-message">{{ orchestratorMessage }}</p>
+      </header>
+
+      <!-- Indicador de etapas (clicável para voltar) -->
+      <nav class="steps-indicator">
+        @for (s of stepOrder; track s; let i = $index) {
+          <button
+            class="step-item"
+            [class.active]="step === s"
+            [class.done]="i < currentStepIndex"
+            [class.reachable]="isStepReachable(s)"
+            [disabled]="!isStepReachable(s)"
+            (click)="goToStep(s)"
+            [title]="stepLabels[s]"
+          >
+            <span class="step-index">
+              @if (i < currentStepIndex) {
+                <app-icon name="check" [size]="12" />
+              } @else {
+                {{ i + 1 }}
+              }
+            </span>
+            <span class="step-name">{{ stepLabels[s] }}</span>
+          </button>
+        }
+      </nav>
+
+      <div class="wizard-body">
+        <!-- ETAPA 1: Objetivo -->
+        @if (step === 'objetivo') {
+          <div class="wizard-step" @fadeInUp>
+            <label class="form-field">
+              <span class="form-label">O que o especialista deve fazer?</span>
+              <textarea
+                class="form-textarea"
+                rows="5"
+                placeholder="Ex.: Ajudar operadores de loja a resolver erros de fechamento de caixa no SAP, explicando o passo a passo e quando abrir chamado."
+                [(ngModel)]="objetivoInput"
+              ></textarea>
+              <span class="form-hint">Descreva com pelo menos uma frase o propósito do agente.</span>
+            </label>
+            <button class="btn-primary" [disabled]="!canAdvanceObjetivo" (click)="submitObjetivo()">
+              <app-icon name="wand" [size]="18" />
+              Gerar prompt do especialista
+            </button>
+          </div>
+        }
+
+        <!-- ETAPA 2: Prompt gerado -->
+        @if (step === 'prompt') {
+          <div class="wizard-step" @fadeInUp>
+            <label class="form-field">
+              <span class="form-label">Prompt do especialista</span>
+              <textarea class="form-textarea code" rows="12" [(ngModel)]="draft.prompt"></textarea>
+              <span class="form-hint">Este prompt foi gerado pelo orquestrador. Ajuste como quiser.</span>
+            </label>
+            <div class="wizard-nav">
+              <button class="btn-secondary" (click)="back()">Voltar</button>
+              <button class="btn-primary" (click)="goToSkills()">
+                Continuar <app-icon name="arrow-right" [size]="18" />
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ETAPA 3: Skills -->
+        @if (step === 'skills') {
+          <div class="wizard-step" @fadeInUp>
+            <div class="options-grid" @listStagger>
+              @for (opt of skillOptions; track opt.id) {
+                <button
+                  class="option-card stagger-item"
+                  [class.selected]="opt.selected"
+                  (click)="toggleOption(opt)"
+                >
+                  <app-icon [name]="opt.icon || 'zap'" [size]="20" />
+                  <span>{{ opt.label }}</span>
+                  @if (opt.selected) {
+                    <app-icon name="check" [size]="16" class="check" />
+                  }
+                </button>
+              }
+            </div>
+            <div class="wizard-nav">
+              <button class="btn-secondary" (click)="back()">Voltar</button>
+              <button class="btn-primary" (click)="goToTools()">
+                Continuar <app-icon name="arrow-right" [size]="18" />
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ETAPA 4: Tools -->
+        @if (step === 'tools') {
+          <div class="wizard-step" @fadeInUp>
+            <div class="options-list" @listStagger>
+              @for (opt of toolOptions; track opt.id) {
+                <button
+                  class="option-row stagger-item"
+                  [class.selected]="opt.selected"
+                  (click)="toggleOption(opt)"
+                >
+                  <app-icon [name]="opt.icon || 'zap'" [size]="18" />
+                  <span>{{ opt.label }}</span>
+                  <span class="option-check">
+                    @if (opt.selected) { <app-icon name="check" [size]="16" /> }
+                  </span>
+                </button>
+              }
+            </div>
+            <div class="wizard-nav">
+              <button class="btn-secondary" (click)="back()">Voltar</button>
+              <button class="btn-primary" (click)="goToKnowledge()">
+                Continuar <app-icon name="arrow-right" [size]="18" />
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ETAPA 5: Catálogo de documentos para RAG -->
+        @if (step === 'knowledge') {
+          <div class="wizard-step" @fadeInUp>
+            <div class="catalog-head">
+              <div class="catalog-search">
+                <app-icon name="search" [size]="16" />
+                <input
+                  type="text"
+                  class="catalog-search-input"
+                  placeholder="Buscar documento por nome, área ou conteúdo"
+                  [(ngModel)]="documentSearch"
+                >
+              </div>
+              <span class="catalog-count">
+                {{ draft.documents.length }} selecionado{{ draft.documents.length === 1 ? '' : 's' }}
+              </span>
+            </div>
+
+            <div class="doc-catalog" @listStagger>
+              @for (doc of filteredDocuments; track doc.id) {
+                <button
+                  class="doc-card stagger-item"
+                  [class.selected]="isDocumentSelected(doc)"
+                  (click)="toggleDocument(doc)"
+                >
+                  <span class="doc-icon">
+                    <app-icon [name]="doc.icon || 'file-text'" [size]="20" />
+                  </span>
+                  <span class="doc-info">
+                    <span class="doc-name">{{ doc.name }}</span>
+                    <span class="doc-desc">{{ doc.description }}</span>
+                    <span class="doc-meta">
+                      <span class="doc-tag">{{ doc.category }}</span>
+                      <span class="doc-sep">·</span>
+                      <span>{{ doc.type }}</span>
+                      <span class="doc-sep">·</span>
+                      <span>{{ doc.size }}</span>
+                    </span>
+                  </span>
+                  <span class="doc-check" [class.on]="isDocumentSelected(doc)">
+                    @if (isDocumentSelected(doc)) { <app-icon name="check" [size]="14" /> }
+                  </span>
+                </button>
+              } @empty {
+                <p class="catalog-empty">Nenhum documento encontrado para "{{ documentSearch }}".</p>
+              }
+            </div>
+
+            <div class="wizard-nav">
+              <button class="btn-secondary" (click)="back()">Voltar</button>
+              <button class="btn-primary" (click)="goToRevisao()">
+                Revisar <app-icon name="arrow-right" [size]="18" />
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ETAPA 6: Revisão -->
+        @if (step === 'revisao') {
+          <div class="wizard-step" @fadeInUp>
+            <label class="form-field">
+              <span class="form-label">Nome do especialista</span>
+              <input type="text" class="form-input" placeholder="Ex.: Especialista Fechamento de Caixa" [(ngModel)]="draft.name" maxlength="50">
+            </label>
+
+            <div class="review-block">
+              <span class="review-label">Objetivo</span>
+              <p class="review-value">{{ draft.objetivo }}</p>
+            </div>
+
+            <div class="review-block">
+              <div class="review-prompt-head">
+                <span class="review-label">Prompt gerado</span>
+                <button class="btn-link" (click)="goToStep('prompt')" title="Editar prompt">
+                  <app-icon name="wand" [size]="14" />
+                  Editar
+                </button>
+              </div>
+              <pre class="review-prompt">{{ draft.prompt }}</pre>
+            </div>
+
+            <div class="review-block">
+              <span class="review-label">Habilidades</span>
+              @if (selectedSkillLabels.length) {
+                <div class="review-pills">
+                  @for (s of selectedSkillLabels; track s) { <span class="review-pill">{{ s }}</span> }
+                </div>
+              } @else { <p class="review-empty">Nenhuma selecionada.</p> }
+            </div>
+
+            <div class="review-block">
+              <span class="review-label">Ferramentas</span>
+              @if (selectedToolLabels.length) {
+                <div class="review-pills">
+                  @for (t of selectedToolLabels; track t) { <span class="review-pill">{{ t }}</span> }
+                </div>
+              } @else { <p class="review-empty">Nenhuma selecionada.</p> }
+            </div>
+
+            <div class="review-block">
+              <span class="review-label">Documentos para RAG</span>
+              @if (selectedDocuments.length) {
+                <div class="review-docs">
+                  @for (doc of selectedDocuments; track doc.id) {
+                    <div class="review-doc">
+                      <app-icon [name]="doc.icon || 'file-text'" [size]="16" />
+                      <span class="review-doc-name">{{ doc.name }}</span>
+                      <span class="review-doc-type">{{ doc.type }}</span>
+                    </div>
+                  }
+                </div>
+              } @else { <p class="review-empty">Nenhum documento selecionado.</p> }
+            </div>
+
+            <div class="wizard-nav">
+              <button class="btn-secondary" (click)="restart()">Recomeçar</button>
+              <button class="btn-primary">
+                <app-icon name="check" [size]="18" />
+                Salvar Especialista
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Right Panel: Chat de teste -->
+  <section class="test-panel" [class.chat-mode]="testAgent">
+    @if (testAgent) {
+      <div class="chat-actions" @fadeInUp>
+        <span class="test-badge">
+          <app-icon name="zap" [size]="14" />
+          Modo de teste
+        </span>
+      </div>
+      <app-chat
+        [agent]="testAgent"
+        [embedded]="true"
+        [showExpandButton]="!wizardVisible"
+        (expandPanel)="toggleWizard()"
+        @chatEnter
+      />
+    } @else {
+      @if (!wizardVisible) {
+        <button class="wizard-reopen" title="Mostrar orquestrador" (click)="toggleWizard()">
+          <app-icon name="panel-left" [size]="18" />
+        </button>
+      }
+      <div class="test-placeholder" @fadeInUp>
+        <app-icon name="cpu" [size]="64" [strokeWidth]="1.5" class="placeholder-icon" />
+        <h3 class="placeholder-title">Teste seu especialista aqui</h3>
+        <p class="placeholder-text">
+          Descreva o objetivo do especialista ao lado. Assim que o prompt for gerado,
+          você poderá conversar com ele para testar antes de salvar.
+        </p>
+      </div>
+    }
+  </section>
+</div>

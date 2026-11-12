@@ -1,0 +1,318 @@
+:host {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+.home-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  gap: var(--panel-gap);
+  padding: var(--panel-gap);
+  background-color: var(--color-app-bg);
+}
+
+// Left Panel - Presets (card flutuante)
+.presets-panel {
+  flex: 0 0 clamp(420px, 40%, 620px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-card);
+  border-radius: var(--panel-radius);
+  overflow-y: auto;
+  
+  .user-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 30px;
+
+    .panel-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      padding: 0;
+      background: none;
+      border: none;
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+    }
+    
+    .user-avatar {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--color-primary), #00A070);
+      border-radius: 50%;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: white;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+    
+    .user-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--color-text-primary);
+    }
+    
+    .user-email {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+  
+  .presets-title {
+    padding: 0 30px 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-text-primary);
+  }
+  
+  .presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 30px 30px;
+  }
+}
+
+// Preset Card
+.preset-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--color-bg-dark);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  
+  &:hover {
+    border-color: var(--color-border-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &.active {
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-card);
+  }
+  
+  .preset-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    transition: transform var(--transition-normal);
+  }
+
+  &:hover .preset-icon {
+    transform: scale(1.08) rotate(-3deg);
+  }
+  
+  .preset-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .preset-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+  }
+  
+  .preset-description {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+  
+  .preset-btn {
+    padding: 10px 20px;
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--color-bg-dark);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    
+    &:hover {
+      background-color: var(--color-primary-hover);
+    }
+  }
+}
+
+// Right Panel - Chat (card flutuante)
+.chat-panel {
+  position: relative;
+  flex: 1;
+  display: flex;
+  background-color: var(--color-bg-card);
+  border-radius: var(--panel-radius);
+  min-width: 0;
+  overflow: hidden;
+
+  // O chat embutido preenche todo o painel
+  app-chat {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Botão flutuante para reabrir os presets
+  .presets-reopen {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-text-primary);
+    }
+  }
+  
+  .chat-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    max-width: 400px;
+    margin: auto;
+    
+    .placeholder-icon {
+      color: var(--color-text-muted);
+      margin-bottom: 24px;
+      opacity: 0.6;
+    }
+    
+    .placeholder-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--color-text-primary);
+      margin-bottom: 12px;
+    }
+    
+    .placeholder-text {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+  }
+}
+
+// ============================================
+// RESPONSIVIDADE
+// ============================================
+
+// Tablets e telas médias - painel de presets menor
+@media (max-width: 1100px) {
+  .presets-panel {
+    flex: 0 0 clamp(360px, 45%, 480px);
+    
+    .user-header,
+    .presets-title,
+    .presets-list {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
+  
+  .preset-card {
+    padding: 16px;
+    gap: 12px;
+    
+    .preset-icon {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      font-size: 20px;
+    }
+    
+    .preset-name {
+      font-size: 15px;
+    }
+    
+    .preset-description {
+      font-size: 12px;
+    }
+    
+    .preset-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+  }
+}
+
+// Telas pequenas - empilhar (só presets, esconde painel de preview)
+@media (max-width: 820px) {
+  .home-layout {
+    flex-direction: column;
+  }
+  
+  .presets-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    border-right: none;
+  }
+  
+  .chat-panel {
+    display: none;
+  }
+}

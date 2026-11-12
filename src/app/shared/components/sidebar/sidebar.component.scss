@@ -1,0 +1,442 @@
+:host {
+  display: flex;
+  flex: 0 0 var(--sidebar-width);
+  height: 100%;
+  position: relative;
+  transition: flex-basis var(--transition-normal);
+}
+
+// ============================================
+// ESTADO RAIL (colapsado): faixa estreita com ícones
+// ============================================
+:host-context(.sidebar-collapsed) {
+  flex-basis: var(--sidebar-rail-width);
+
+  .sidebar {
+    // A sidebar interna mantém a largura total, mas fica posicionada
+    // absolutamente para poder "expandir por cima" no hover sem empurrar o layout.
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-rail-width);
+    min-width: var(--sidebar-rail-width);
+    z-index: 30;
+    overflow: hidden;
+    transition: width var(--transition-normal), box-shadow var(--transition-normal);
+
+    // Header vira só a logo centralizada (esconde o texto e o botão)
+    .logo { opacity: 0; width: 0; flex: 0; }
+    .collapse-btn { opacity: 0; width: 0; min-width: 0; padding: 0; pointer-events: none; }
+
+    &__header {
+      padding: 20px 0;
+      justify-content: center;
+      gap: 0;
+    }
+
+    // Esconde a busca (mostra só o ícone centralizado)
+    &__search {
+      padding: 12px 0;
+
+      .search-input {
+        justify-content: center;
+        padding: 10px 0;
+        background: none;
+      }
+      .search-field { display: none; }
+    }
+
+    // Títulos das seções somem
+    .section-title { opacity: 0; height: 0; margin: 0; overflow: hidden; }
+
+    // Nav / itens: centraliza ícones, esconde labels
+    &__nav { padding: 8px 0; align-items: stretch; gap: 4px; }
+
+    .nav-item,
+    .fav-item,
+    .recent-item {
+      justify-content: center;
+      gap: 0;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+    .nav-label,
+    .fav-name,
+    .recent-body { display: none; }
+
+    // Favoritos: o dot vira o "ícone"
+    .fav-dot { width: 10px; height: 10px; min-width: 10px; }
+
+    // Recentes: mostra um dot no lugar do texto
+    .recent-item .recent-rail-dot { display: block; }
+
+    &__section { padding: 12px 0; align-items: stretch; gap: 4px; }
+
+    // Footer empilha verticalmente
+    &__footer {
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 12px 20px;
+    }
+  }
+
+  // ------- HOVER: expande por cima do conteúdo -------
+  // Restaura EXATAMENTE o layout expandido (idêntico ao modo destacado).
+  // Importante: não usar `&__...` aqui, pois `&` = `.sidebar:hover` e geraria
+  // seletores inválidos como `.sidebar:hover__search`.
+  .sidebar:hover {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    box-shadow: var(--shadow-lg);
+
+    .logo { opacity: 1; width: auto; flex: 1; }
+    .collapse-btn { opacity: 1; width: 32px; min-width: 32px; padding: 0; pointer-events: auto; }
+
+    .sidebar__header { padding: 20px; justify-content: flex-start; gap: 10px; }
+
+    .sidebar__search {
+      padding: 16px;
+
+      .search-input {
+        justify-content: flex-start;
+        padding: 10px 12px;
+        background-color: var(--color-bg-card);
+      }
+      .search-field { display: block; }
+    }
+
+    .section-title { opacity: 1; height: auto; margin-bottom: 8px; overflow: visible; }
+
+    .sidebar__nav { padding: 8px 16px 16px; align-items: stretch; gap: 4px; }
+
+    .nav-item,
+    .fav-item,
+    .recent-item { justify-content: flex-start; width: auto; }
+
+    .nav-item { gap: 10px; padding: 10px 12px; }
+    .recent-item { gap: 10px; padding: 10px 12px; }
+    .fav-item { gap: 10px; padding: 8px 12px; }
+
+    .nav-label,
+    .fav-name { display: block; }
+    .recent-body { display: flex; }
+
+    .recent-item .recent-rail-dot { display: none; }
+
+    .sidebar__section { padding: 16px; align-items: stretch; gap: 4px; }
+
+    .sidebar__footer {
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 0;
+      padding: 16px 24px 20px;
+    }
+  }
+}
+
+.sidebar {
+  // Remapeia as variáveis de cor DENTRO da sidebar para o tema claro.
+  // Assim todos os `var(--color-*)` usados abaixo resolvem para tons claros,
+  // sem precisar editar cada regra individualmente.
+  --color-bg-dark: var(--sidebar-bg);
+  --color-bg-card: var(--sidebar-surface);
+  --color-bg-hover: var(--sidebar-surface-strong);
+  --color-bg-input: var(--sidebar-surface);
+  --color-text-primary: var(--sidebar-text);
+  --color-text-secondary: var(--sidebar-text-secondary);
+  --color-text-muted: var(--sidebar-text-muted);
+  --color-border: var(--sidebar-border);
+  --color-border-light: var(--sidebar-border);
+
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--sidebar-bg);
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    
+    .logo-mark {
+      width: 24px;
+      height: 22px;
+      min-width: 24px;
+      object-fit: contain;
+      display: block;
+      transition: opacity var(--transition-fast);
+    }
+    
+    .logo {
+      flex: 1;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      transition: opacity var(--transition-fast);
+    }
+    
+    .collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      padding: 0;
+      background: none;
+      border: none;
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      
+      &:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+  
+  &__divider {
+    height: 1px;
+    background-color: var(--color-border);
+    
+    &--inset {
+      margin: 0 16px;
+    }
+  }
+  
+  &__search {
+    padding: 16px;
+    
+    .search-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background-color: var(--color-bg-card);
+      border-radius: var(--radius-md);
+      
+      .search-icon {
+        color: var(--color-text-muted);
+      }
+      
+      .search-field {
+        flex: 1;
+        min-width: 0;
+        background: none;
+        border: none;
+        outline: none;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: var(--color-text-primary);
+        
+        &::placeholder {
+          color: var(--color-text-muted);
+        }
+      }
+    }
+  }
+  
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 16px 16px;
+  }
+  
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    
+    &--grow {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+  
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 24px 20px;
+    
+    .footer-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      background: none;
+      border: none;
+      border-radius: var(--radius-md);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      
+      &:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-text-primary);
+      }
+    }
+  }
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  
+  .nav-icon {
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+  }
+  
+  .nav-label {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+  
+  &:hover {
+    background-color: var(--color-bg-hover);
+    
+    .nav-icon,
+    .nav-label {
+      color: var(--color-text-primary);
+    }
+  }
+  
+  &.active {
+    background-color: var(--color-bg-hover);
+    
+    .nav-icon {
+      color: var(--color-primary);
+    }
+    
+    .nav-label {
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+  }
+}
+
+.fav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+  
+  .fav-dot {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    border-radius: 50%;
+  }
+  
+  .fav-name {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+  
+  &:hover {
+    background-color: var(--color-bg-hover);
+    
+    .fav-name {
+      color: var(--color-text-primary);
+    }
+  }
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+  
+  .recent-rail-dot {
+    display: none;
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    border-radius: 50%;
+    background-color: var(--color-text-muted);
+  }
+  
+  .recent-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  
+  .recent-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .recent-time {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+  
+  .recent-preview {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  &:hover {
+    background-color: var(--color-bg-hover);
+  }
+}
